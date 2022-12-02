@@ -1,6 +1,6 @@
 # mvjseppa's Advent of Code 2022 solutions
 
-I'm studying Clojure by solving AoC22 puzzles.
+I'm studying Clojure by solving [AoC22 puzzles](https://adventofcode.com/2022).
 
 ## Usage
 
