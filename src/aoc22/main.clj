@@ -1,7 +1,8 @@
 (ns aoc22.main 
   (:require [aoc22.day1]
             [aoc22.day2]
-            [aoc22.day3]))
+            [aoc22.day3]
+            [aoc22.day4]))
 
 (defn -main [which]
   (let [day (Integer. which)
