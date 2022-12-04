@@ -15,10 +15,10 @@
 
 (defn parse-assignment [assignment-string]
   (->>
-   (str/split assignment-string #",")
-   (map #(str/split % #"-"))
-   (map #(->> % (map read-string) (vec)))
-   (vec)))
+   (str/split assignment-string #"[,-]")
+   (map read-string)
+   (partition 2)
+   (map vec)))
 
 (defn -main []
   (->>
