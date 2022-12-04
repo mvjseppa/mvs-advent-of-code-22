@@ -1,6 +1,7 @@
 (ns aoc22.day4
   (:gen-class)
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]))
 
 (defn number-in-interval [number interval]
   (and (>= number (interval 0)) (<= number (interval 1))))
@@ -14,16 +15,14 @@
       (some #(number-in-interval % b) a)))
 
 (defn parse-assignment [assignment-string]
-  (->>
-   (str/split assignment-string #"[,-]")
-   (map read-string)
-   (partition 2)
-   (map vec)))
+  (->> (str/split assignment-string #"[,-]")
+       (map read-string)
+       (partition 2)
+       (map vec)))
 
 (defn -main []
-  (->>
-   (slurp "resources/day4.txt")
-   (str/split-lines)
-   (map parse-assignment)
-   (filter #(apply any-overlap? %)) ;use full-overlap for task1
-   (count)))
+  (with-open [reader (io/reader "resources/day4.txt")]
+    (->> (line-seq reader)
+         (map parse-assignment)
+         (filter #(apply any-overlap? %)) ;use full-overlap for task1
+         (count))))
