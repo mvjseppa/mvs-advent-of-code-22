@@ -2,15 +2,14 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
+(defn numberInRange [number range] 
+  (and (>= number (range 0)) (<= number (range 1))))
+
 (defn full-overlap [assignment]
-  (and
-   (<= (get-in assignment [0 0]) (get-in assignment [1 0]))
-   (>= (get-in assignment [0 1]) (get-in assignment [1 1]))))
+  (every? #(numberInRange % (assignment 0)) (assignment 1)))
 
 (defn any-overlap [assignment]
-  (not (or
-   (every? #(< % (get-in assignment [0 0])) (assignment 1))
-   (every? #(> % (get-in assignment [0 1])) (assignment 1))))) 
+  (some #(numberInRange % (assignment 0)) (assignment 1)))
 
 (defn parse-assignment [assignment-string]
   (->>
