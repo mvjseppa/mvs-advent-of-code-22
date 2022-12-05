@@ -2,24 +2,24 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
-(defn input-width [input] (+ 1 (str/index-of input "\n")))
-(defn input-height [input] (count (re-seq #"\n" input)))
+(defn filter-relevant-chars [chars]
+  (->> (filter #(Character/isUpperCase %) chars)
+       (into (list))
+       (reverse)))
 
-(defn read-column [input, x]
-  (let [h (input-height input) w (input-width input)]
-    (->>
-     (for [y (range h)]
-       (first (subs input (+ (* y w) x))))
-     (filter #(not= % \space))
-     (reverse)
-     (into (list)))))
-
-(defn parse-stacks [stacks]
-  (->> (range 1 (input-width stacks) 4)
-       (map #(read-column stacks %))
+(defn character-vector [s]
+  (->> (str/split-lines s)
+       (map char-array)
        (vec)))
 
-(defn parse-order-line [input]
+(defn parse-stacks [stacks]
+  (->> (character-vector stacks)
+       (apply mapv vector) ;transpose
+       (map filter-relevant-chars)
+       (filter not-empty)
+       (vec)))
+
+(defn parse-orders-line [input]
   (->> (str/split input #" ")
        (map read-string)
        (filter integer?)
@@ -30,7 +30,7 @@
 
 (defn parse-orders [input]
   (->> (str/split-lines input)
-       (map parse-order-line)
+       (map parse-orders-line)
        (into (list))
        (reverse)))
 
