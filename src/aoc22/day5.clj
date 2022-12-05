@@ -19,35 +19,38 @@
        (map #(read-column stacks %))
        (vec)))
 
-(defn move-crates-model-9000 [stacks orders]
-  (let [count (orders 0)
-        from (dec (orders 1))
-        to (dec (orders 2))]
-    (loop [count count stacks stacks]
-      (if (= 0 count)
-        stacks
-        (recur
-         (dec count)
-         (-> stacks
-             (assoc to (conj (stacks to) (peek (stacks from))))
-             (assoc from (pop (stacks from)))))))))
-
-(defn move-crates-model-9001 [stacks orders]
-  (let [count (orders 0)
-        from (dec (orders 1))
-        to (dec (orders 2))]
-    (-> stacks
-        (assoc to (flatten (conj (stacks to) (take count (stacks from)))))
-        (assoc from (drop count (stacks from))))))
+(defn parse-order-line [input]
+  (->> (str/split input #" ")
+       (map read-string)
+       (filter integer?)
+       (zipmap [:count :from :to])
+       (#(-> %  ;start stack indexing from 0
+             (assoc :from (dec (% :from)))
+             (assoc :to (dec (% :to)))))))
 
 (defn parse-orders [input]
   (->> (str/split-lines input)
-       (map #(->> (str/split % #" ")
-                  (map read-string)
-                  (filter integer?)
-                  (vec)))
+       (map parse-order-line)
        (into (list))
        (reverse)))
+
+(defn move-a-crate [stacks to from]
+  (-> stacks
+      (assoc to (conj (stacks to) (peek (stacks from))))
+      (assoc from (pop (stacks from)))))
+
+(defn move-crates-model-9000 [stacks orders]
+  (let [{count :count to :to from :from} orders]
+    (loop [count count stacks stacks]
+      (if (= 0 count)
+        stacks
+        (recur (dec count) (move-a-crate stacks to from))))))
+
+(defn move-crates-model-9001 [stacks orders]
+  (let [{count :count to :to from :from} orders]
+    (-> stacks
+        (assoc to (flatten (conj (stacks to) (take count (stacks from)))))
+        (assoc from (drop count (stacks from))))))
 
 (defn apply-orders [stacks orders mover-fn]
   (loop [stacks stacks orders orders]
