@@ -2,11 +2,8 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
-(defn input-width [input]
-  (+ 1 (str/index-of input "\n")))
-
-(defn input-height [input]
-  (count (re-seq #"\n" input)))
+(defn input-width [input] (+ 1 (str/index-of input "\n")))
+(defn input-height [input] (count (re-seq #"\n" input)))
 
 (defn read-column [input, x]
   (let [h (input-height input) w (input-width input)]
@@ -22,7 +19,7 @@
        (map #(read-column stacks %))
        (vec)))
 
-(defn move-crates [stacks orders]
+(defn move-crates-model-9000 [stacks orders]
   (let [count (orders 0)
         from (dec (orders 1))
         to (dec (orders 2))]
@@ -31,8 +28,17 @@
         stacks
         (recur
          (dec count)
-         (-> stacks (assoc to (conj (stacks to) (peek (stacks from))))
+         (-> stacks
+             (assoc to (conj (stacks to) (peek (stacks from))))
              (assoc from (pop (stacks from)))))))))
+
+(defn move-crates-model-9001 [stacks orders]
+  (let [count (orders 0)
+        from (dec (orders 1))
+        to (dec (orders 2))]
+    (-> stacks
+        (assoc to (flatten (conj (stacks to) (take count (stacks from)))))
+        (assoc from (drop count (stacks from))))))
 
 (defn parse-orders [input]
   (->> (str/split-lines input)
@@ -43,21 +49,19 @@
        (into (list))
        (reverse)))
 
-(defn apply-orders [stacks orders]
+(defn apply-orders [stacks orders mover-fn]
   (loop [stacks stacks orders orders]
-
     (if (empty? orders)
       stacks
       (recur
-       (move-crates stacks (peek orders))
+       (mover-fn stacks (peek orders))
        (pop orders)))))
 
 (defn -main []
   (->> (str/split (slurp "resources/day5.txt") #"\n\n")
-       (#(apply-orders 
+       (#(apply-orders
           (parse-stacks (% 0))
-          (parse-orders (% 1))))
+          (parse-orders (% 1))
+          move-crates-model-9001)) ; use move-crates-mode-9000 for part 1
        (map first)
        (apply str)))
-
-(-main)
