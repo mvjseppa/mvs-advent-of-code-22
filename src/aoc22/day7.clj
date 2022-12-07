@@ -10,19 +10,19 @@
 
 (defn get-ls-data [ls-row]
   (let [parts (str/split ls-row #" ")]
-    {:path (keyword (parts 1)) 
-     :payload (if (= (parts 0) "dir") 
-                {} 
+    {:path (keyword (parts 1))
+     :payload (if (= (parts 0) "dir")
+                {}
                 (read-string (parts 0)))}))
 
 (defn update-file-tree-node [ls-data node]
   (assoc node (ls-data :path) (ls-data :payload)))
 
-(defn process-ls [ls-output node] 
+(defn process-ls [ls-output node]
   (loop [files ls-output node node]
     (if (empty? files)
       node
-      (recur 
+      (recur
        (next files)
        (-> (first files)
            (get-ls-data)
@@ -49,18 +49,30 @@
     (reduce + (map file-size (vals node)))
     node))
 
-(defn -main []
+(defn directory-sizes []
   (->> (str/split (slurp "resources/day7.txt") #"\$ ")
        (rest)
        (reduce
-        cmd-reducer 
+        cmd-reducer
         {:path [] :file-tree {:/ {}}})
        (#(% :file-tree))
        (tree-seq map? vals)
        (filter map?)
-       (map file-size)
-       (filter #(> 100000 %))
-       (reduce +)
-       ))
+       (map file-size)))
 
-(-main)
+(defn part1 [sizes]
+  (->> sizes
+       (filter #(> 100000 %))
+       (reduce +)))
+
+(defn part2 [sizes]
+  (let [free-space (- 70000000 (apply max sizes))
+        space-needed 30000000
+        minimum-to-free  (- space-needed free-space)]
+    (->> sizes
+         (filter #(> % minimum-to-free))
+         (apply min))))
+
+(defn -main []
+  (let [sizes (directory-sizes)]
+    {:part1 (part1 sizes) :part2 (part2 sizes)}))
