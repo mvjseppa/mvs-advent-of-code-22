@@ -4,7 +4,6 @@
 
 (defn change-dir [path cmd]
   (let [target-dir (subs (str/trim cmd) 3)]
-    (println (str "cd: " path " + " target-dir))
     (if (= target-dir "..")
       (pop path)
       (conj path (keyword target-dir)))))
@@ -12,7 +11,9 @@
 (defn get-ls-data [ls-row]
   (let [parts (str/split ls-row #" ")]
     {:path (keyword (parts 1)) 
-     :payload (if (= (parts 0) "dir") {} (read-string (parts 0)))}))
+     :payload (if (= (parts 0) "dir") 
+                {} 
+                (read-string (parts 0)))}))
 
 (defn update-file-tree-node [ls-data node]
   (assoc node (ls-data :path) (ls-data :payload)))
@@ -43,11 +44,23 @@
             (change-dir (state :path) cmd))
       :else state)))
 
+(defn file-size [node]
+  (if (map? node)
+    (reduce + (map file-size (vals node)))
+    node))
+
 (defn -main []
-  (->> (str/split (slurp "resources/day7-example.txt") #"\$ ")
+  (->> (str/split (slurp "resources/day7.txt") #"\$ ")
        (rest)
        (reduce
         cmd-reducer 
-        {:path [] :file-tree {:/ {}}})))
+        {:path [] :file-tree {:/ {}}})
+       (#(% :file-tree))
+       (tree-seq map? vals)
+       (filter map?)
+       (map file-size)
+       (filter #(> 100000 %))
+       (reduce +)
+       ))
 
 (-main)
