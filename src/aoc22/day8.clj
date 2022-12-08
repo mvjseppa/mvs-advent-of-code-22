@@ -3,14 +3,14 @@
   (:require [clojure.string :as str]))
 
 (defn parse-tree-map []
-  (let [tree-map (->> (slurp "resources/day8.txt")
-                      (str/split-lines)
-                      (map #(->> (re-seq #".{1,1}" %)
-                                 (map read-string)
-                                 (vec)))
-                      (vec))]
-    {:original tree-map
-     :transpose (apply mapv vector tree-map)}))
+  (->> (slurp "resources/day8.txt")
+       (str/split-lines)
+       (map #(->> (re-seq #".{1,1}" %)
+                  (map read-string)
+                  (vec)))
+       (vec)))
+
+(defn column [n v] (vec (flatten (map #(% n) v))))
 
 (defn tree-visible-in-row? [tree-row idx]
   (or (every? #(> (tree-row idx) %) (subvec tree-row 0 idx))
@@ -19,8 +19,8 @@
 (defn tree-visible [x y trees]
   (if
    (or
-    (tree-visible-in-row? ((trees :original) y) x)
-    (tree-visible-in-row? ((trees :transpose) x) y))
+    (tree-visible-in-row? (trees y) x)
+    (tree-visible-in-row? (column x trees) y))
     1 0))
 
 (defn mark-trees [marker-fn trees]
@@ -29,7 +29,7 @@
      (map-indexed
       (fn [x _] (marker-fn x y trees))
       row))
-   (trees :original)))
+   trees))
 
 (defn scenic-score-one-direction [line-of-sight]
   (or (first (keep-indexed
@@ -43,8 +43,8 @@
 
 (defn scenic-score [x y trees]
   (*
-   (scenic-score-row ((trees :original) y) x)
-   (scenic-score-row ((trees :transpose) x) y)))
+   (scenic-score-row (trees y) x)
+   (scenic-score-row (column x trees) y)))
 
 (defn part1 [tree-map]
   (->> (mark-trees tree-visible tree-map)
@@ -59,4 +59,3 @@
 (defn -main []
   (let [tree-map (parse-tree-map)]
     {:part1 (part1 tree-map) :part2 (part2 tree-map)}))
-
