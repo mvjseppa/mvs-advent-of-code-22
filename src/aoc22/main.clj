@@ -5,7 +5,8 @@
             [aoc22.day4]
             [aoc22.day5]
             [aoc22.day6]
-            [aoc22.day7]))
+            [aoc22.day7]
+            [aoc22.day8]))
 
 (defn -main [which]
   (let [day (Integer. which)
