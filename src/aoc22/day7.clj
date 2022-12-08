@@ -8,15 +8,12 @@
       (pop path)
       (conj path (keyword target-dir)))))
 
-(defn get-ls-data [ls-row]
+(defn ls-data [ls-row]
   (let [parts (str/split ls-row #" ")]
     {:path (keyword (parts 1))
      :payload (if (= (parts 0) "dir")
                 {}
                 (read-string (parts 0)))}))
-
-(defn update-file-tree-node [ls-data node]
-  (assoc node (ls-data :path) (ls-data :payload)))
 
 (defn process-ls [ls-output node]
   (loop [files ls-output node node]
@@ -25,8 +22,8 @@
       (recur
        (next files)
        (-> (first files)
-           (get-ls-data)
-           (update-file-tree-node node))))))
+           (ls-data)
+           (#(assoc node (% :path) (% :payload))))))))
 
 (defn cmd-reducer [state cmd]
   (let [path-to-node (concat [:file-tree] (state :path))]
@@ -42,6 +39,7 @@
             state
             :path
             (change-dir (state :path) cmd))
+
       :else state)))
 
 (defn file-size [node]
@@ -66,9 +64,9 @@
        (reduce +)))
 
 (defn part2 [sizes]
-  (let [free-space (- 70000000 (apply max sizes))
-        space-needed 30000000
-        minimum-to-free  (- space-needed free-space)]
+  (let [minimum-to-free (->> (apply max sizes)
+                             (- 70000000) 
+                             (- 30000000))]
     (->> sizes
          (filter #(> % minimum-to-free))
          (apply min))))
@@ -76,3 +74,5 @@
 (defn -main []
   (let [sizes (directory-sizes)]
     {:part1 (part1 sizes) :part2 (part2 sizes)}))
+
+(-main)
