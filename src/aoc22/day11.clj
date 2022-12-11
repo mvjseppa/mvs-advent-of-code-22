@@ -15,7 +15,7 @@
 (defn parse-items [s] (->> (str/split s #"[\s,]")
                            (remove str/blank?)
                            (drop 2)
-                           (map #( read-string %)) 
+                           (map #(read-string %))
                            (vec)))
 
 (defn parse-monkey [input]
@@ -41,7 +41,9 @@
 
 (defn update-worry-levels [monkey worry-divisor]
   (->> (monkey :items)
-       (map #(/ (mod ((monkey :operation) %) divisor-product) worry-divisor))
+       (map #(-> ((monkey :operation) %)
+                 (mod divisor-product)
+                 (/ worry-divisor)))
        (vec)
        (assoc monkey :items)))
 
@@ -81,14 +83,13 @@
     (if (>= idx (count monkeys))
       monkeys
       (recur (inc idx)
-             (process-turn monkeys idx, worry-divisor)))))
+             (process-turn monkeys idx worry-divisor)))))
 
 (defn process-n-rounds [n monkeys worry-divisor]
   (loop [n n monkeys monkeys]
     (if (zero? n)
       monkeys
-      (recur (dec n) (process-round monkeys worry-divisor))) 
-    ))
+      (recur (dec n) (process-round monkeys worry-divisor)))))
 
 (def end-state-part1 (process-n-rounds 20 initial-monkeys 3))
 (def end-state-part2 (process-n-rounds 10000 initial-monkeys 1))
@@ -96,8 +97,7 @@
 (defn count-monkey-business [monkeys]
   (->> monkeys
        (map #(get % :inspection-count))
-       (sort) 
-       (reverse)
+       (sort #(compare %2 %1))
        (take 2)
        (reduce *)))
 
@@ -105,4 +105,3 @@
   {:part1 (count-monkey-business end-state-part1)
    :part2 (count-monkey-business end-state-part2)})
 
-(-main)
