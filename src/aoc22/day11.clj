@@ -104,4 +104,3 @@
 (defn -main []
   {:part1 (count-monkey-business end-state-part1)
    :part2 (count-monkey-business end-state-part2)})
-
