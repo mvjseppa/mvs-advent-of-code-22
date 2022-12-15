@@ -18,7 +18,10 @@
        (apply concat)
        (map sort-line)))
 
-all-lines
+(defn line-to-points [[[x0 y0] [x1 y1]]]
+  (cond
+    (= x0 x1) (map (fn [y] [x0 y]) (range y0 (inc y1)))
+    (= y0 y1) (map (fn [x] [x y0]) (range x0 (inc x1)))))
 
 (def y-max
   (->> (flatten all-lines)
@@ -27,62 +30,41 @@ all-lines
        (apply max)
        (+ 2)))
 
-(defn point-on-line? [[xp yp] [[x0 y0] [x1 y1]]]
-  ;(println [x0 y0] [x1 y1])
-  (cond
-    (= x0 x1) (and (= xp x0) (<= y0 yp y1))
-    (= y0 y1) (and (= yp y0) (<= x0 xp x1))
-    :else (throw (Exception. "epic fail"))))
+(def initial-obstacles
+  (->> all-lines
+       (map line-to-points)
+       (apply concat)
+       (reduce 
+        (fn [acc [x y]] (assoc acc y (conj (acc y) x)))
+        (vec (repeat (inc y-max) #{})) 
+        )))
 
-(defn not-reserved? [[x y] sand]
-  (not (or
-        (get-in sand [x y])
-        (= y y-max)
-        (some #(point-on-line? [x y] %)  all-lines))))
+(defn collision? [[x y] sand] (or (= y y-max) (get-in sand [y x])))
 
 (defn move-particle [[x y] sand]
   (or (first (filter
-              #(not-reserved? % sand)
+              #(not (collision? % sand))
               [[x (inc y)]
                [(dec x) (inc y)]
                [(inc x) (inc y)]]))
       [x y]))
 
-(move-particle [500 8] [])
-
-all-lines
-
 (defn process-particle [sand]
   (loop [[x y] [500 0] prev nil]
-    ;(println [x y] prev)
     (cond
-      ;(> y y-max) nil
-      (= [x y] prev) [(assoc-in sand [x y] true) [x y]]
+      (= [x y] prev) [(assoc sand y (conj (sand y) x)) [x y]]
       :else (recur
              (move-particle [x y] sand)
              [x y]))))
 
-(process-particle [])
-
-(defn count-sand [sand] (reduce + (map count (vals sand))))
+(defn count-sand [sand] (reduce + (map count sand)))
 
 (defn -main []
-  (loop [sand {}]
+  (loop [sand initial-obstacles n 0]
     (let [[new-sand particle] (process-particle sand)]
-      (println particle)
+      ;(when (zero? (mod n 100)) (println n))
       (if (or (nil? particle) (= 0 (last particle)))
-        (count-sand new-sand)
-        (recur new-sand)))))
+        (- (count-sand new-sand) (count-sand initial-obstacles))
+        (recur new-sand (inc n))))))
 
-(-main)
-
-(vec (sort [4 2]))
-
-(point-on-line? [3 9] [[3 5] [3 10]])
-(point-on-line? [3 9] [[3 10] [3 5]])
-(point-on-line? [[3 2] [12 2]] [3 2])
-(point-on-line? [[3 3] [12 2]] [3 2])
-
-(point-on-line? [[3 5] [3 10]] [3 11])
-(point-on-line? [[3 2] [12 2]] [1 2])
-(point-on-line? [[3 2] [12 2]] [0 2])
+(time (-main))
