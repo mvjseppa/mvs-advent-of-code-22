@@ -1,20 +1,9 @@
 (ns aoc22.day15
   (:gen-class)
-  (:require [clojure.set :as set]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]))
 
 (defn manhattan-distance [[x0 y0] [x1 y1]]
   (+ (abs (- x0 x1)) (abs (- y0 y1))))
-
-(defn sensor-row-coverage [row-idx reading]
-  (let [{[xs ys] :sensor r :radius} reading
-        dx (- r (abs (- row-idx ys)))]
-
-    (->> (range (- xs dx) (+ xs dx 1))
-         (apply hash-set))))
-
-(sensor-row-coverage 1 {:sensor [8 7] :beacon [2 10]})
-(sensor-row-coverage -100 {:sensor [8 7] :beacon [2 10]})
 
 (def readings
   (->> (slurp "resources/day15.txt")
@@ -37,22 +26,34 @@
        (map #(get % :beacon))
        (apply hash-set)))
 
-beacon-positions
+(defn row-coverages-one-sensors [row-idx reading]
+  (let [{[xs ys] :sensor r :radius} reading
+        dx (- r (abs (- row-idx ys)))]
+    (when (> dx 0) [(- xs dx) (+ xs dx 1)])))
 
-(defn beacons-on-row [row-idx]
-  (apply hash-set (for
-                   [b beacon-positions
-                    :let [x (b 0)]
-                    :when (= (b 1) row-idx)]
-                    x)))
-
-(beacons-on-row 2000000)
-
-(defn part1 []
+(defn row-coverages-all-sensors [row-idx]
   (->> readings
-       (map #(sensor-row-coverage 2000000 %))
-       (apply set/union)
-       (#(set/difference % (beacons-on-row 2000000)))
-       (count)))
+       (map #(row-coverages-one-sensors row-idx %))
+       (remove nil?)
+       (sort)))
 
-(time (part1))
+(defn traverse-row [y] 
+  (loop [x 0 coverages (row-coverages-all-sensors y)] 
+    (let [[x1 x2] (first coverages)]
+      (cond
+        (> x 4000000) nil
+        (beacon-positions [x y]) (recur (inc x) coverages)
+        (empty? coverages) x
+        (<= x1 x (dec x2)) (recur x2 (rest coverages))
+        :else (recur x (rest coverages))))))
+
+(defn -main [] 
+  (loop [y 0]
+    (when (zero? (mod y 10000)) (println y))
+    (let [x (traverse-row y)]
+      (cond
+        (> y 4000000) nil
+        (nil? x) (recur (inc y))
+        :else (+ y (* 4000000N x))))))
+
+(time (-main))
