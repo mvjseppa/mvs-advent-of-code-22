@@ -55,5 +55,3 @@
         (> y 4000000) nil
         (nil? x) (recur (inc y))
         :else (+ y (* 4000000N x))))))
-
-(time (-main))
