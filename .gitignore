@@ -15,4 +15,6 @@ pom.xml.asc
 .lsp/
 .calva/
 src/aoc22/day16.clj
+src/aoc22/day19.clj
 resources/day16*
+resources/day19*

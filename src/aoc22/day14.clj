@@ -65,5 +65,3 @@
       (if (or (nil? particle) (= 0 (last particle)))
         (- (count-points new-obstacles) (count-points initial-obstacles))
         (recur new-obstacles)))))
-
-(time (-main))

@@ -106,13 +106,13 @@
         (map str/join)
         (str/join "\n"))))
 
-(def rocks-until-first-cycle (get (process-rocks-until-height 425) :n))
-(def rocks-per-cycle (- (get (process-rocks-until-height 3072) :n) rocks-until-first-cycle))
-(def n-cycles (bigint (/ (- 1000000000000N rocks-until-first-cycle) rocks-per-cycle)))
-(def height-in-cycles (* n-cycles (- 3072 425)))
-(def rocks-after-cycles (mod (- 1000000000000N rocks-until-first-cycle) rocks-per-cycle))
-(def height-out-of-cycles ((process-n-rocks (+ rocks-until-first-cycle rocks-after-cycles)) :h))
+;(def rocks-until-first-cycle (get (process-rocks-until-height 425) :n))
+;(def rocks-per-cycle (- (get (process-rocks-until-height 3072) :n) rocks-until-first-cycle))
+;(def n-cycles (bigint (/ (- 1000000000000N rocks-until-first-cycle) rocks-per-cycle)))
+;(def height-in-cycles (* n-cycles (- 3072 425)))
+;(def rocks-after-cycles (mod (- 1000000000000N rocks-until-first-cycle) rocks-per-cycle))
+;(def height-out-of-cycles ((process-n-rocks (+ rocks-until-first-cycle rocks-after-cycles)) :h))
 
-(defn -main []
-  {:part1 ((process-n-rocks 2022) :h)
-   :part2 (+ height-out-of-cycles height-in-cycles)})
+;(defn -main []
+;  {:part1 ((process-n-rocks 2022) :h)
+;   :part2 (+ height-out-of-cycles height-in-cycles)})
