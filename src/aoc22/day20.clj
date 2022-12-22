@@ -85,6 +85,3 @@
 (defn -main []
   {:part1 (decrypt-coordinates (apply-encryption-key 1 input-data) 1)
    :part2 (decrypt-coordinates (apply-encryption-key 811589153 input-data) 10)})
-
-
-(-main)
